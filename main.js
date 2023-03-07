@@ -64,7 +64,12 @@ var app = http.createServer(function(request,response){
                     var list = templateList(filelist);
                     var template = templateHTML(title,list,
                         `<h2>${title}</h2><p>${description}</p>`,
-                        `<a href="/create">create</a> <a href="/update?id=${title}">update</a>`
+                        `<a href="/create">create</a>
+                        <a href="/update?id=${title}">update</a>
+                        <form action="delete_process" method="post" onsubmit="double-checking js code">
+                            <input type="hidden" name="id" value="${title}">
+                            <input type="submit" value="delete">
+                        </form>`
                         );
             
                 response.writeHead(200);
@@ -156,6 +161,21 @@ var app = http.createServer(function(request,response){
                 response.writeHead(302, {Location: `/?id=${title}`});
                 response.end();
             });
+            console.log(post);
+        });
+    } else if(pathname === '/delete_process'){
+        var body = '';
+        request.on('data', function(data) { // 'data': 일정 양의 데이터를 받을 때마다 'data'의 callback 함수 호출
+            body += data;
+            // Too much POST data, kill the connection!
+        }); 
+        request.on('end', function() { // 'end': 데이터를 다 받고나서 'end'의 callback 함수 호출
+            var post = qs.parse(body);
+            var id = post.id;
+           fs.unlink(`data/${id}`, function(erre) {
+                response.writeHead(302, {Location: `/`});
+                response.end();
+           })
             console.log(post);
         });
     } else {
